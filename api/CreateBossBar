@@ -1,0 +1,106 @@
+package me.isaac.bossbarapi.api;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.craftbukkit.v1_11_R1.boss.CraftBossBar;
+import org.bukkit.entity.Player;
+
+public class CreateBossBar {
+	
+	private static HashMap<UUID, CreateBossBar> bossBars = new HashMap<UUID, CreateBossBar>();
+	
+	private String title;
+	private BarColor color;
+	private BarStyle style;
+	private CraftBossBar bar;
+	private UUID id;
+	
+	public CreateBossBar(String title, BarColor color, BarStyle style, UUID id) {
+		
+		this.title = title;
+		this.color = color;
+		this.style = style;
+		this.id = id;
+		
+		bossBars.put(id, this);
+		
+		CraftBossBar bar = new CraftBossBar(title, color, style, BarFlag.CREATE_FOG);
+		
+		this.bar = bar;
+		
+	}
+	
+	public UUID getID() {
+		return id;
+	}
+	
+	public void setProgress(double progress) {
+		
+		bar.setProgress(progress);
+		
+	}
+	
+	public void setVisable(boolean visible) {
+		bar.setVisible(visible);
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+	public BarColor getColor() {
+		return color;
+	}
+	
+	public BarStyle getStyle() {
+		return style;
+	}
+	
+	public void addPlayer(Player player) {
+		
+		bar.addPlayer(player);
+		
+	}
+	
+	public void removePlayer(Player player) {
+		
+		bar.removePlayer(player);
+		
+	}
+	
+	public List<Player> getPlayers() {
+		
+		return bar.getPlayers();
+		
+	}
+	
+	public void removeAllPlayers() {
+		
+		for (Player players : bar.getPlayers()) {
+			bar.removePlayer(players);
+		}
+		
+	}
+	
+	public static CreateBossBar GetBossBar(UUID id) {
+		
+		return bossBars.get(id);
+		
+	}
+	
+	public static void removeBossBar(UUID id) {
+		
+		CreateBossBar bar = bossBars.get(id);
+		
+		bar.removeAllPlayers();
+		
+		bossBars.remove(id);
+		
+	}
+
+}
