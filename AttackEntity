@@ -1,0 +1,88 @@
+package me.isaac.bossbarapi;
+
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+
+import me.isaac.bossbarapi.api.CreateBossBar;
+
+public class AttackEntity implements Listener {
+	
+	public Main plugin;
+	public AttackEntity(Main pl) {
+		plugin = pl;
+	}
+	
+	@SuppressWarnings("deprecation")
+	@EventHandler
+	public void playerAttack(EntityDamageByEntityEvent e) {
+		
+		if (!(e.getDamager() instanceof Player)) {
+			return;
+		}
+		
+		Player player = (Player) e.getDamager();
+		
+		LivingEntity entity = (LivingEntity) e.getEntity();
+		
+		UUID id = entity.getUniqueId();
+		
+		double maxHealth = entity.getMaxHealth();
+		double health = entity.getHealth();
+		double newHealth = health - e.getDamage();
+		
+		double progress = newHealth / maxHealth;
+		
+		if (CreateBossBar.GetBossBar(id) != null) {
+			
+			CreateBossBar bar = CreateBossBar.GetBossBar(id);
+			
+			if (bar.getPlayers().contains(player)) {
+				bar.setProgress(progress);
+			} else {
+				bar.addPlayer(player);
+			}
+			
+		} else {
+			CreateBossBar bar = new CreateBossBar(ChatColor.RED + entity.getName(), BarColor.PINK, BarStyle.SEGMENTED_20, entity.getUniqueId());
+			
+			bar.setProgress(progress);
+			
+			bar.addPlayer(player);
+		
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				
+				@Override
+				public void run() {
+					
+					bar.removePlayer(player);
+					
+				}
+				
+			}, 20 * 3);
+			
+		}
+		
+	}
+	
+	@EventHandler
+	public void onEntityDeath(EntityDeathEvent e) {
+		
+		LivingEntity entity = (LivingEntity) e.getEntity();
+		
+		UUID id = entity.getUniqueId();
+		
+		CreateBossBar.removeBossBar(id);
+		
+	}
+
+}
